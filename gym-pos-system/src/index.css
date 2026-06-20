@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Habilitar Dark Mode manual por clases (ej. class="dark") */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body {
+  background-color: #111827; /* Fondo oscuro para que al hacer overscroll o estirar, no se vea en blanco */
+}

@@ -1,0 +1,12 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Backend binaries and data
+gym-pos-backend/pb_data/
+gym-pos-backend/pocketbase.exe
+gym-pos-backend/pocketbase
+
+# macOS
+.DS_Store
