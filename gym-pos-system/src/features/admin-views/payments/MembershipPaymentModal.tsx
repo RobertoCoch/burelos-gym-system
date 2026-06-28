@@ -134,7 +134,7 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
     }
   };
 
-  const handlePreSubmit = () => {
+  const handlePreSubmit = async () => {
     if (!isGuest && !selectedUserId) {
       toast.error('Selecciona un usuario o marca la opción de invitado');
       return;
@@ -148,6 +148,24 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
       return;
     }
     
+    // Verificar si el usuario ya tiene una membresía activa
+    if (!isGuest && selectedUserId) {
+      setIsSubmitting(true);
+      try {
+        const existingMembresias = await pb.collection('membresias_activas').getFullList({
+          filter: `usuario = "${selectedUserId}" && estado = "activa"`
+        });
+        if (existingMembresias.length > 0) {
+          toast.error('El usuario ya tiene una membresía activa');
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error verificando membresía activa:', error);
+      }
+      setIsSubmitting(false);
+    }
+
     setIsConfirmOpen(true);
   };
 
@@ -155,6 +173,15 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
     setIsConfirmOpen(false);
     setIsSubmitting(true);
     try {
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+      let finalDateStr = '';
+      if (paymentDate === todayStr) {
+        finalDateStr = new Date().toISOString();
+      } else {
+        const [year, month, day] = paymentDate.split('-');
+        finalDateStr = new Date(Number(year), Number(month) - 1, Number(day), 12, 0, 0).toISOString();
+      }
+
       // 1. Crear el registro en pagos_membresias
       const paymentData = {
         usuario: isGuest ? null : selectedUserId,
@@ -162,7 +189,7 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
         plan: selectedPlanId,
         monto_cobrado: Number(customAmount),
         metodo_pago: paymentMethod,
-        fecha_pago: new Date(paymentDate).toISOString(),
+        fecha_pago: finalDateStr,
       };
 
       await pb.collection('pagos_membresias').create(paymentData);
@@ -179,7 +206,7 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
         const activeMembershipData = {
           usuario: selectedUserId,
           plan: selectedPlanId,
-          fecha_inicio: new Date(paymentDate).toISOString(),
+          fecha_inicio: finalDateStr,
           fecha_vencimiento: expDate.toISOString(),
           estado: 'activa'
         };
@@ -200,7 +227,7 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
       queryClient.invalidateQueries({ queryKey: ['membresias'] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
 
-      handleClose();
+      executeClose();
     } catch (error: any) {
       console.error(error);
       toast.error(error?.message || 'Hubo un error al registrar el pago');

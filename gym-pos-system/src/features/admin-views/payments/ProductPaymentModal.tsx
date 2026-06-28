@@ -197,6 +197,15 @@ export default function ProductPaymentModal({ isOpen, onClose }: ProductPaymentM
     setIsConfirmOpen(false);
     setIsSubmitting(true);
     try {
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+      let finalDateStr = '';
+      if (paymentDate === todayStr) {
+        finalDateStr = new Date().toISOString();
+      } else {
+        const [year, month, day] = paymentDate.split('-');
+        finalDateStr = new Date(Number(year), Number(month) - 1, Number(day), 12, 0, 0).toISOString();
+      }
+
       // Registrar cada producto como un pago separado y descontar stock
       for (const item of cartItems) {
         // 1. Crear pago_producto
@@ -207,7 +216,7 @@ export default function ProductPaymentModal({ isOpen, onClose }: ProductPaymentM
           monto_cobrado: item.product.precio * item.quantity,
           cantidad: item.quantity, // Si la BD lo soporta
           metodo_pago: paymentMethod,
-          fecha_pago: new Date(paymentDate).toISOString(),
+          fecha_pago: finalDateStr,
         });
 
         // 2. Descontar stock
