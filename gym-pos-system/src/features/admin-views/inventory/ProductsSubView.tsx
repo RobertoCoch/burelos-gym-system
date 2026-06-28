@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Edit, Search, Filter, Loader2, Image as ImageIcon, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import pb from '../../../lib/pocketbase';
+import ProductFormModal from './ProductFormModal';
 
 interface ProductsSubViewProps {
   onBack: () => void;
@@ -10,6 +11,9 @@ interface ProductsSubViewProps {
 export default function ProductsSubView({ onBack }: ProductsSubViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [stockSort, setStockSort] = useState<'none' | 'desc' | 'asc'>('none');
+  
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<any | null>(null);
 
   // 1. Fetch de productos
   const { data: productos, isLoading, isError } = useQuery({
@@ -54,6 +58,10 @@ export default function ProductsSubView({ onBack }: ProductsSubViewProps) {
       {/* Agregar Botón */}
       <div className="px-6 mb-6">
         <button 
+          onClick={() => {
+            setProductToEdit(null);
+            setIsFormOpen(true);
+          }}
           className="w-full bg-[#FFC107] hover:bg-[#ffca28] text-black font-extrabold py-3 px-6 rounded-2xl transition-transform active:scale-95 shadow-[0_4px_14px_0_rgba(255,193,7,0.39)] flex justify-center items-center"
         >
           Agregar +
@@ -153,7 +161,13 @@ export default function ProductsSubView({ onBack }: ProductsSubViewProps) {
                 </div>
 
                 {/* Botón Editar */}
-                <button className="absolute top-4 right-4 w-8 h-8 bg-[#FFC107] hover:bg-[#ffca28] rounded-full flex items-center justify-center text-black transition-transform active:scale-95 shadow-md">
+                <button 
+                  onClick={() => {
+                    setProductToEdit(prod);
+                    setIsFormOpen(true);
+                  }}
+                  className="absolute top-4 right-4 w-8 h-8 bg-[#FFC107] hover:bg-[#ffca28] rounded-full flex items-center justify-center text-black transition-transform active:scale-95 shadow-md"
+                >
                   <Edit size={14} strokeWidth={2.5} />
                 </button>
               </div>
@@ -162,6 +176,11 @@ export default function ProductsSubView({ onBack }: ProductsSubViewProps) {
         )}
       </div>
 
+      <ProductFormModal 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        productToEdit={productToEdit}
+      />
     </div>
   );
 }
