@@ -1,6 +1,8 @@
 import PocketBase from 'pocketbase';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+// Si estás accediendo desde otro dispositivo, intentará usar la misma IP para conectarse a PocketBase
+const pbUrl = import.meta.env.VITE_PB_URL || `http://${window.location.hostname}:8090`;
+const pb = new PocketBase(pbUrl);
 
 // Interceptor ANTES de enviar la petición
 pb.beforeSend = function (url, options) {
