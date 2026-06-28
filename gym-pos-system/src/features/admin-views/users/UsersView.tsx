@@ -27,7 +27,7 @@ export default function UsersView() {
   }, [searchTerm]);
 
   // Consultar usuarios reales de PocketBase
-  const { data: usersData, isLoading, isError } = useQuery({
+  const { data: usersData, isLoading: loadingUsers, isError } = useQuery({
     queryKey: ['users', sortOrder],
     queryFn: async () => {
       return await pb.collection('users').getFullList({
@@ -35,6 +35,30 @@ export default function UsersView() {
       });
     },
   });
+
+  // Consultar todas las membresías activas para enlazarlas con los usuarios
+  const { data: membershipsData, isLoading: loadingMemberships } = useQuery({
+    queryKey: ['membresias', 'todas'],
+    queryFn: async () => {
+      try {
+        return await pb.collection('membresias_activas').getFullList({ expand: 'plan' });
+      } catch (err) {
+        return [];
+      }
+    },
+  });
+
+  const membershipMap = useMemo(() => {
+    const map = new Map<string, any>();
+    if (membershipsData) {
+      membershipsData.forEach(m => {
+        map.set(m.usuario, m);
+      });
+    }
+    return map;
+  }, [membershipsData]);
+
+  const isLoading = loadingUsers || loadingMemberships;
 
   const handleOpenDetails = (userId: string) => {
     setSelectedUserId(userId);
@@ -65,14 +89,19 @@ export default function UsersView() {
         matchesSearch = !!(nameMatch || emailMatch);
       }
         
-      // 2. Filtro por estado (Actualmente hardcodeados a "Sin asignar", por lo que Activos/Vencidos retornará 0)
+      // 2. Filtro por estado (Todos, Activos, Vencidos)
       let matchesStatus = true;
-      if (statusFilter === 'Activos') matchesStatus = false;
-      if (statusFilter === 'Vencidos') matchesStatus = false;
+      const mem = membershipMap.get(user.id);
+      
+      if (statusFilter === 'Activos') {
+        matchesStatus = !!mem && mem.estado === 'activa';
+      } else if (statusFilter === 'Vencidos') {
+        matchesStatus = !!mem && mem.estado === 'vencida';
+      }
       
       return matchesSearch && matchesStatus;
     });
-  }, [usersData, debouncedSearch, statusFilter]);
+  }, [usersData, debouncedSearch, statusFilter, membershipMap]);
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto font-sans text-white" style={{ paddingBottom: '100px' }}>
@@ -174,25 +203,39 @@ export default function UsersView() {
           </div>
         ) : (
           <div className="flex flex-col" style={{ gap: '12px' }}>
-            {filteredUsers.map((user) => (
-              <div key={user.id} className="flex justify-between items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl hover:bg-white/10 transition-colors" style={{ padding: '16px' }}>
-                <div className="flex flex-col">
-                  <span className="text-[#FFC107] font-bold text-sm md:text-base drop-shadow-[0_0_8px_rgba(255,193,7,0.3)]">
-                    {user.name || user.email}
-                  </span>
-                  <span className="text-gray-400 font-medium text-xs md:text-sm">Sin asignar</span>
-                  <span className="text-white/60 font-bold text-xs md:text-sm mt-1">Sin asignar</span>
+            {filteredUsers.map((user) => {
+              const mem = membershipMap.get(user.id);
+              const planName = mem?.expand?.plan?.nombre || 'Sin asignar';
+              const isExpired = mem?.estado === 'vencida';
+              const statusText = mem ? (isExpired ? 'Vencido' : 'Activo') : 'Sin asignar';
+              const statusColor = mem ? (isExpired ? 'text-red-500' : 'text-[#22c55e]') : 'text-gray-400';
+
+              return (
+                <div key={user.id} className="flex justify-between items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl hover:bg-white/10 transition-colors" style={{ padding: '16px' }}>
+                  <div className="flex flex-col">
+                    <span className="text-[#FFC107] font-bold text-sm md:text-base drop-shadow-[0_0_8px_rgba(255,193,7,0.3)]">
+                      {user.name || user.email}
+                    </span>
+                    <span className="text-white/80 font-medium text-xs md:text-sm">
+                      {planName}
+                    </span>
+                    {mem && (
+                      <span className={`font-bold text-xs md:text-sm mt-1 ${statusColor}`}>
+                        {statusText}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => handleOpenDetails(user.id)}
+                      className="flex items-center gap-1.5 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-1.5 px-3 text-xs sm:text-sm rounded-lg transition-colors shadow-sm active:scale-95"
+                    >
+                      <Edit size={14} strokeWidth={2.5} /> Detalles
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <button 
-                    onClick={() => handleOpenDetails(user.id)}
-                    className="flex items-center gap-2 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-1.5 px-4 rounded-xl transition-colors shadow-sm active:scale-95"
-                  >
-                    <Edit size={16} /> Detalles
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

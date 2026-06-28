@@ -6,14 +6,14 @@ export default function Dashboard() {
 
       <div style={{ padding: '0 24px', marginBottom: '24px' }}>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm" style={{ lineHeight: '1.2' }}>
-          Bienvenido a tu<br />
-          <span className="text-[#FFC107] drop-shadow-[0_0_15px_rgba(255,193,7,0.4)]">Dashboard</span>
+          Panel de<br />
+          <span className="text-[#FFC107] drop-shadow-[0_0_15px_rgba(255,193,7,0.4)]">Administrador</span>
         </h1>
       </div>
 
       {/* Top Row Container (Ingresos & Clientes on Desktop) */}
       <div className="flex flex-col lg:flex-row lg:gap-8" style={{ padding: '0 24px', marginBottom: '32px' }}>
-        
+
         {/* Ingresos Section */}
         <div className="flex-[2] mb-8 lg:mb-0">
           <h2 className="text-xl font-extrabold tracking-tight text-white/90" style={{ marginBottom: '16px' }}>Ingresos</h2>
@@ -123,12 +123,13 @@ export default function Dashboard() {
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] text-white grid grid-cols-2 shadow-[0_8px_30px_rgb(0,0,0,0.12)]" style={{ padding: '24px 16px' }}>
 
-          <div className="flex flex-col items-center text-center group cursor-pointer hover:bg-white/5 rounded-xl transition-colors" style={{ padding: '16px 8px' }}>
-            <p className="text-sm font-semibold text-gray-400 group-hover:text-white transition-colors" style={{ marginBottom: '16px' }}>Equipo</p>
-            <Dumbbell size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
-            <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] group-hover:scale-110 transition-transform drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>32</p>
+          <div className="relative flex flex-col items-center text-center opacity-50 cursor-not-allowed rounded-xl" style={{ padding: '16px 8px' }}>
+            <div className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
+            <p className="text-sm font-semibold text-gray-400" style={{ marginBottom: '16px' }}>Equipo</p>
+            <Dumbbell size={48} className="text-white drop-shadow-md" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
+            <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>-</p>
             <div className="flex items-center text-xs font-semibold text-gray-400">
-              <Wrench size={14} style={{ marginRight: '6px' }} /> 1 en mantenimiento
+              Próximamente
             </div>
           </div>
 

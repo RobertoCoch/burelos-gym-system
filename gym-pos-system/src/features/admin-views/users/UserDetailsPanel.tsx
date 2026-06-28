@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit, Calendar, Mail, Loader2, Diamond } from 'lucide-react';
+import { ArrowLeft, Edit, Calendar, Mail, Loader2, Diamond, LogOut } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import pb from '../../../lib/pocketbase';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ConfirmModal from '../../../components/shared/ConfirmModal';
 
 interface UserDetailsPanelProps {
   userId: string | null;
   isOpen: boolean;
   onClose: () => void;
   onEdit: (user: any) => void;
+  slideFrom?: 'left' | 'right';
+  isCurrentUser?: boolean;
+  onLogout?: () => void;
 }
 
 // Función auxiliar para obtener iniciales
@@ -33,9 +37,10 @@ const stringToColor = (str: string) => {
   return color;
 };
 
-export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit }: UserDetailsPanelProps) {
+export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slideFrom = 'right', isCurrentUser = false, onLogout }: UserDetailsPanelProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -111,14 +116,16 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit }: Us
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] flex justify-end font-sans transition-opacity duration-300
+      className={`fixed inset-0 z-[100] flex font-sans transition-opacity duration-300
+        ${slideFrom === 'left' ? 'justify-start' : 'justify-end'}
         ${isMounted && !isClosing ? 'bg-black/40' : 'bg-transparent pointer-events-none'}
       `}
       onClick={handleClose}
     >
       <div 
-        className={`w-full max-w-md h-full bg-[#111827]/90 backdrop-blur-2xl border-l border-white/10 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
-          ${isMounted && !isClosing ? 'translate-x-0' : 'translate-x-full'}
+        className={`w-full max-w-md h-full bg-[#111827]/90 backdrop-blur-2xl shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
+          ${slideFrom === 'left' ? 'border-r border-white/10' : 'border-l border-white/10'}
+          ${isMounted && !isClosing ? 'translate-x-0' : (slideFrom === 'left' ? '-translate-x-full' : 'translate-x-full')}
         `}
         onClick={e => e.stopPropagation()} // Prevenir cerrar al hacer clic dentro
       >
@@ -166,7 +173,7 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit }: Us
 
                 <div className="text-center mt-2">
                   <span className="bg-white/10 text-white/80 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block">
-                    {user.role === 'admin' ? 'Administrador' : 'Cliente'}
+                    {isCurrentUser ? 'Tú' : (user.role === 'admin' ? 'Administrador' : 'Cliente')}
                   </span>
                   <h2 className="text-2xl font-extrabold text-[#FFC107] drop-shadow-[0_0_10px_rgba(255,193,7,0.3)] leading-tight text-center break-words max-w-xs">
                     {user.name || user.email}
@@ -199,36 +206,59 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit }: Us
               </div>
 
               {/* Información General */}
-              <div className="w-full flex flex-col mt-2 gap-4 relative">
-                <h3 className="text-white font-bold text-lg">Información</h3>
+              <div className="w-full flex flex-col mt-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-bold text-lg">Información</h3>
+                  <button 
+                    onClick={() => onEdit(user)}
+                    className="flex items-center gap-1.5 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-1.5 px-3 text-xs sm:text-sm rounded-lg transition-colors shadow-sm active:scale-95"
+                  >
+                    <Edit size={14} strokeWidth={2.5} /> Modificar
+                  </button>
+                </div>
                 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
-                    <Calendar size={18} className="text-white/40" />
+                    <Calendar size={18} className="text-white/40 shrink-0" />
                     <span className="text-white/70 text-sm">Se unió el {joinDate}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Mail size={18} className="text-white/40" />
+                    <Mail size={18} className="text-white/40 shrink-0" />
                     <a href={`mailto:${user.email}`} className="text-[#FFC107] hover:underline text-sm break-all">
                       {user.email}
                     </a>
                   </div>
                 </div>
+              </div>
 
-                {/* Botón Modificar */}
-                <div className="absolute right-0 top-0">
+              {/* Botón Cerrar Sesión (Sólo si es el perfil del usuario actual) */}
+              {isCurrentUser && onLogout && (
+                <div className="w-full mt-4 pb-4">
                   <button 
-                    onClick={() => onEdit(user)}
-                    className="flex items-center gap-2 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-2 px-4 rounded-xl transition-colors shadow-sm active:scale-95"
+                    onClick={() => setIsLogoutConfirmOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold py-3 px-4 rounded-xl transition-all border border-red-500/20 active:scale-95 shadow-sm"
                   >
-                    <Edit size={16} /> Modificar
+                    <LogOut size={18} strokeWidth={2.5} /> Cerrar Sesión
                   </button>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isLogoutConfirmOpen}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que deseas salir de tu sesión actual?"
+        confirmText="Sí, salir"
+        cancelText="Cancelar"
+        onConfirm={() => {
+          setIsLogoutConfirmOpen(false);
+          if (onLogout) onLogout();
+        }}
+        onCancel={() => setIsLogoutConfirmOpen(false)}
+      />
     </div>
   );
 }
