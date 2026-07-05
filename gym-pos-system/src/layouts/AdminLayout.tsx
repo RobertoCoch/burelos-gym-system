@@ -81,7 +81,7 @@ export default function AdminLayout() {
             ? 'bg-[#111827]/70 backdrop-blur-lg border-b border-white/10 shadow-lg' 
             : 'bg-transparent'
         }`} 
-        style={{ padding: '24px 24px 12px 24px' }}
+        style={{ padding: '12px 24px 12px 24px' }}
       >
         <button 
           onClick={() => setIsProfileOpen(true)}

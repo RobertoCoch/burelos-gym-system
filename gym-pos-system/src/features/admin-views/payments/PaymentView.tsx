@@ -1,4 +1,6 @@
-import { Dumbbell, Package, ArrowDownUp, Filter, Loader2 } from 'lucide-react';
+import { ArrowDownUp, Filter, Loader2 } from 'lucide-react';
+import { MdOutlineWorkspacePremium } from 'react-icons/md';
+import { FaCartShopping } from 'react-icons/fa6';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import pb from '../../../lib/pocketbase';
@@ -109,14 +111,14 @@ export default function PaymentView() {
             onClick={() => setIsMembershipModalOpen(true)}
             className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 group py-8 px-4 lg:py-6 lg:px-6 lg:w-40 lg:h-36">
             <p className="text-base font-bold text-white group-hover:text-[#FFC107] transition-colors mb-4 lg:mb-3">Membresía</p>
-            <Dumbbell size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <MdOutlineWorkspacePremium size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" />
           </button>
           
           <button 
             onClick={() => setIsProductModalOpen(true)}
             className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 group py-8 px-4 lg:py-6 lg:px-6 lg:w-40 lg:h-36">
             <p className="text-base font-bold text-white group-hover:text-[#FFC107] transition-colors mb-4 lg:mb-3">Productos</p>
-            <Package size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <FaCartShopping size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" />
           </button>
         </div>
       </div>
@@ -194,9 +196,9 @@ export default function PaymentView() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     {payment.category === 'membresia' ? (
-                      <Dumbbell size={14} className="text-[#FFC107]" />
+                      <MdOutlineWorkspacePremium size={14} className="text-[#FFC107]" />
                     ) : (
-                      <Package size={14} className="text-[#FFC107]" />
+                      <FaCartShopping size={14} className="text-[#FFC107]" />
                     )}
                     <span className="text-[#FFC107] font-bold text-sm md:text-base drop-shadow-[0_0_8px_rgba(255,193,7,0.3)] truncate max-w-[150px] md:max-w-none">
                       {payment.type}

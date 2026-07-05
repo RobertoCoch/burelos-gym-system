@@ -1,4 +1,6 @@
-import { Dumbbell, Package, AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { GiGymBag } from 'react-icons/gi';
+import { FaCartShopping } from 'react-icons/fa6';
 import { useQuery } from '@tanstack/react-query';
 import pb from '../../../lib/pocketbase';
 import { format, subMonths, isAfter, isBefore, addDays, startOfMonth, parseISO } from 'date-fns';
@@ -289,7 +291,7 @@ export default function Dashboard() {
           <div className="relative flex flex-col items-center text-center opacity-50 cursor-not-allowed rounded-xl" style={{ padding: '16px 8px' }}>
             <div className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
             <p className="text-sm font-semibold text-gray-400" style={{ marginBottom: '16px' }}>Equipo</p>
-            <Dumbbell size={48} className="text-white drop-shadow-md" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
+            <GiGymBag size={48} className="text-white drop-shadow-md" style={{ marginBottom: '16px' }} />
             <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>-</p>
             <div className="flex items-center text-xs font-semibold text-gray-400">
               Próximamente
@@ -298,7 +300,7 @@ export default function Dashboard() {
 
           <div className="flex flex-col items-center text-center border-l border-white/10 group cursor-pointer hover:bg-white/5 rounded-xl transition-colors" style={{ padding: '16px 8px' }}>
             <p className="text-sm font-semibold text-gray-400 group-hover:text-white transition-colors" style={{ marginBottom: '16px' }}>Productos</p>
-            <Package size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
+            <FaCartShopping size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md" style={{ marginBottom: '16px' }} />
             <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] group-hover:scale-110 transition-transform drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>
               {totalProductosStock}
             </p>

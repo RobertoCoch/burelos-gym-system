@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Dumbbell, Package, ClipboardList, Activity } from 'lucide-react';
+import { MdSportsGymnastics, MdOutlineWorkspacePremium } from 'react-icons/md';
+import { GiGymBag } from 'react-icons/gi';
+import { FaCartShopping } from 'react-icons/fa6';
 import PlansSubView from './PlansSubView';
 import ProductsSubView from './ProductsSubView';
 
@@ -34,14 +36,14 @@ export default function InventoryView() {
             onClick={() => setCurrentSubView('planes')}
             className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 group aspect-square lg:aspect-auto lg:h-32 lg:flex-1">
             <p className="text-base sm:text-lg font-bold text-white group-hover:text-[#FFC107] transition-colors mb-4 lg:mb-2">Planes</p>
-            <ClipboardList size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <MdOutlineWorkspacePremium size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" />
           </button>
 
           <button
             onClick={() => setCurrentSubView('productos')}
             className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 group aspect-square lg:aspect-auto lg:h-32 lg:flex-1">
             <p className="text-base sm:text-lg font-bold text-white group-hover:text-[#FFC107] transition-colors mb-4 lg:mb-2">Productos</p>
-            <Package size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <FaCartShopping size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" />
           </button>
 
           <button
@@ -49,7 +51,7 @@ export default function InventoryView() {
             className="relative flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] aspect-square lg:aspect-auto lg:h-32 lg:flex-1 opacity-50 cursor-not-allowed">
             <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/50 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
             <p className="text-base sm:text-lg font-bold text-white mb-4 lg:mb-2">Equipo</p>
-            <Dumbbell size={48} className="text-white drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <GiGymBag size={48} className="text-white drop-shadow-md lg:w-10 lg:h-10" />
           </button>
 
           <button
@@ -57,7 +59,7 @@ export default function InventoryView() {
             className="relative flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] aspect-square lg:aspect-auto lg:h-32 lg:flex-1 opacity-50 cursor-not-allowed">
             <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/50 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
             <p className="text-base sm:text-lg font-bold text-white mb-4 lg:mb-2">Rutinas</p>
-            <Activity size={48} className="text-white drop-shadow-md lg:w-10 lg:h-10" strokeWidth={1.5} />
+            <MdSportsGymnastics size={48} className="text-white drop-shadow-md lg:w-10 lg:h-10" />
           </button>
         </div>
       </div>
