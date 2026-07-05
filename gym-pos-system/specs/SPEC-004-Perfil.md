@@ -6,10 +6,10 @@
 - **Dueño:** Roberto (o equipo de desarrollo)
 
 ## 1. Objetivo
-Personalizar la barra superior (Header) para reflejar los datos del usuario real que ha iniciado sesión, reutilizar el panel lateral de detalles de usuario para que funcione como el perfil personal (Tú) y agregar una etiqueta estática de la versión de la aplicación ("Beta 1.0").
+Personalizar la barra superior (Header) de toda la aplicación (tanto para Administradores como para Clientes) para reflejar los datos del usuario real que ha iniciado sesión. Además, se reutiliza el panel lateral de detalles de usuario para que funcione como el perfil personal (Tú) y agregar una etiqueta estática de la versión de la aplicación ("Beta 1.0").
 
 ## 2. Contexto
-Actualmente, el sistema muestra el texto "Administrador" de forma estática en la barra superior. Es necesario que se muestre el nombre del usuario autenticado para darle un toque más personalizado. Además, el botón de "Cerrar sesión" en la cabecera ocupa espacio que puede ser reemplazado por un distintivo de la versión ("Beta 1.0"). La función de cerrar sesión y la visualización de datos personales se unificarán en un panel de perfil que se despliega desde el lado izquierdo.
+Inicialmente, el sistema mostraba el texto "Administrador" de forma estática en la barra superior. Se requería que se mostrara el nombre del usuario autenticado para un toque más personalizado en todas las vistas de la app (Admin y Cliente). Además, la función de cerrar sesión y la visualización de datos personales se unifican en un panel de perfil (UserDetailsPanel) que se despliega desde el lado izquierdo al hacer clic en el nombre del usuario en el Header.
 
 ## 3. Requisitos EARS
 
@@ -24,10 +24,10 @@ Actualmente, el sistema muestra el texto "Administrador" de forma estática en l
 ## 4. Implementación (Lo demás)
 
 **Archivos afectados:**
-- `src/components/layout/Header.tsx`:
-  - Se obtendrá la información del modelo autenticado mediante `pb.authStore.model`.
-  - Se añadirá un estado local para abrir el panel lateral izquierdo.
-  - Se reemplazará el botón de cierre de sesión por la etiqueta estática "Beta 1.0".
+- `src/layouts/AdminLayout.tsx` y `src/layouts/ClientLayout.tsx`:
+  - Se obtiene la información del modelo autenticado mediante `pb.authStore.model`.
+  - Se añade un estado local para abrir el panel lateral izquierdo (`UserDetailsPanel`).
+  - Se reemplaza el botón de cierre de sesión por la etiqueta estática "Beta 1.0".
   
 - `src/features/admin-views/users/UserDetailsPanel.tsx`:
   - Se modificarán las propiedades del componente para aceptar nuevas directivas de alineación (derecha por defecto, izquierda para el perfil).
