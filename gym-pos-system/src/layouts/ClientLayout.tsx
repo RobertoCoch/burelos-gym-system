@@ -31,16 +31,16 @@ export default function ClientLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#1C2031] to-[#0A0D14] text-white pb-24 font-sans selection:bg-[#FFC107] selection:text-black">
       {/* Header Superior */}
-      <header className="bg-white shadow-sm px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-        <h1 className="text-xl font-bold text-slate-800">Mi Perfil</h1>
+      <header className="sticky top-0 z-40 bg-[#111827]/70 backdrop-blur-lg border-b border-white/10 shadow-lg px-6 py-4 flex justify-between items-center">
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white drop-shadow-sm">Mi Perfil</h1>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-sm font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-all active:scale-95"
+          className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-4 py-2 rounded-xl transition-all active:scale-95"
         >
           <LogOut size={18} strokeWidth={2.5} />
-          <span>SALIR</span>
+          <span className="hidden sm:inline">SALIR</span>
         </button>
       </header>
 
