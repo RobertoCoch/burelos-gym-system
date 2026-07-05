@@ -231,6 +231,7 @@ export default function ProductPaymentModal({ isOpen, onClose }: ProductPaymentM
       // Refrescar vistas
       queryClient.invalidateQueries({ queryKey: ['pagos'] });
       queryClient.invalidateQueries({ queryKey: ['productos'] });
+      queryClient.invalidateQueries({ queryKey: ['pagos_productos'] });
 
       executeClose();
     } catch (error: any) {

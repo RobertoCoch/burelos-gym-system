@@ -155,7 +155,8 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
         const existingMembresias = await pb.collection('membresias_activas').getFullList({
           filter: `usuario = "${selectedUserId}" && estado = "activa"`
         });
-        if (existingMembresias.length > 0) {
+        const hasActive = existingMembresias.some(m => new Date(m.fecha_vencimiento).getTime() >= new Date().getTime());
+        if (hasActive) {
           toast.error('El usuario ya tiene una membresía activa');
           setIsSubmitting(false);
           return;
@@ -226,6 +227,8 @@ export default function MembershipPaymentModal({ isOpen, onClose }: MembershipPa
       queryClient.invalidateQueries({ queryKey: ['pagos'] });
       queryClient.invalidateQueries({ queryKey: ['membresias'] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['pagos_membresias'] });
+      queryClient.invalidateQueries({ queryKey: ['membresias_activas'] });
 
       executeClose();
     } catch (error: any) {

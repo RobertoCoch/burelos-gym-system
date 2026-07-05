@@ -94,9 +94,9 @@ export default function UsersView() {
       const mem = membershipMap.get(user.id);
       
       if (statusFilter === 'Activos') {
-        matchesStatus = !!mem && mem.estado === 'activa';
+        matchesStatus = !!mem && mem.estado === 'activa' && new Date(mem.fecha_vencimiento).getTime() >= new Date().getTime();
       } else if (statusFilter === 'Vencidos') {
-        matchesStatus = !!mem && mem.estado === 'vencida';
+        matchesStatus = !!mem && (mem.estado === 'vencida' || (mem.estado === 'activa' && new Date(mem.fecha_vencimiento).getTime() < new Date().getTime()));
       }
       
       return matchesSearch && matchesStatus;
@@ -206,7 +206,7 @@ export default function UsersView() {
             {filteredUsers.map((user) => {
               const mem = membershipMap.get(user.id);
               const planName = mem?.expand?.plan?.nombre || 'Sin asignar';
-              const isExpired = mem?.estado === 'vencida';
+              const isExpired = mem?.estado === 'vencida' || (mem?.estado === 'activa' && new Date(mem.fecha_vencimiento).getTime() < new Date().getTime());
               const statusText = mem ? (isExpired ? 'Vencido' : 'Activo') : 'Sin asignar';
               const statusColor = mem ? (isExpired ? 'text-red-500' : 'text-[#22c55e]') : 'text-gray-400';
 

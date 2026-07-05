@@ -107,7 +107,7 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
 
   // Lógica de Membresía
   const hasMembership = !!membership;
-  const isExpired = membership?.estado === 'vencida';
+  const isExpired = membership?.estado === 'vencida' || (membership?.estado === 'activa' && new Date(membership.fecha_vencimiento).getTime() < new Date().getTime());
   const planName = membership?.expand?.plan?.nombre || 'Desconocido';
 
   // Fechas formateadas

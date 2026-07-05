@@ -31,7 +31,8 @@ Para esta funcionalidad interactuaremos principalmente con 3 colecciones:
 - `plan` (Relation -> planes)
 - `fecha_inicio` (Date)
 - `fecha_vencimiento` (Date)
-- `estado` (Select: 'activa', 'vencida')
+- `estado` (Select: 'activa', 'vencida') 
+  *(Nota Arquitectónica: Debido a que la BD no posee tareas programadas, el campo `estado` no se actualiza automáticamente al vencer. El Frontend debe calcular el estado real comparando dinámicamente `fecha_vencimiento` con la fecha actual).*
 - `created`, `updated`
 
 ## 4. Requisitos EARS
@@ -43,6 +44,7 @@ Para esta funcionalidad interactuaremos principalmente con 3 colecciones:
 | REQ-P3 | WHEN un pago es registrado exitosamente, THE SYSTEM SHALL insertar un registro en la colección `pagos_membresias`. |
 | REQ-P4 | IF el pago es para un usuario registrado (no invitado), THEN THE SYSTEM SHALL buscar si el usuario tiene una membresía activa previa. Si la tiene, debe actualizarla; si no, crear un nuevo registro en `membresias_activas`. |
 | REQ-P5 | WHEN se crea o actualiza una membresía en `membresias_activas`, THE SYSTEM SHALL calcular automáticamente la `fecha_vencimiento` sumando la duración del plan (`tipo_duracion`) a la fecha de inicio. |
+| REQ-P6 | THE SYSTEM SHALL calcular el estado de una membresía (Activa/Vencida) de manera dinámica evaluando si la `fecha_vencimiento` es anterior a la fecha actual, superponiendo este cálculo sobre el campo `estado` estático. |
 
 ## 5. Implementación (Lo demás)
 
