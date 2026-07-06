@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit, Calendar, Mail, Loader2, Diamond, LogOut } from 'lucide-react';
+import { ArrowLeft, Edit, Calendar, Mail, Loader2, Diamond, LogOut, Key } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import pb from '../../../lib/pocketbase';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmModal from '../../../components/shared/ConfirmModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 interface UserDetailsPanelProps {
   userId: string | null;
@@ -41,6 +42,7 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
   const [isClosing, setIsClosing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -115,13 +117,14 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
   const expDate = membership?.fecha_vencimiento ? format(parseISO(membership.fecha_vencimiento), "d 'de' MMMM 'del' yyyy", { locale: es }) : '';
 
   return (
-    <div 
-      className={`fixed inset-0 z-[100] flex font-sans transition-opacity duration-300
-        ${slideFrom === 'left' ? 'justify-start' : 'justify-end'}
-        ${isMounted && !isClosing ? 'bg-black/40' : 'bg-transparent pointer-events-none'}
-      `}
-      onClick={handleClose}
-    >
+    <>
+      <div 
+        className={`fixed inset-0 z-[100] flex font-sans transition-opacity duration-300
+          ${slideFrom === 'left' ? 'justify-start' : 'justify-end'}
+          ${isMounted && !isClosing ? 'bg-black/40' : 'bg-transparent pointer-events-none'}
+        `}
+        onClick={handleClose}
+      >
       <div 
         className={`w-full max-w-md h-full bg-[#111827]/90 backdrop-blur-2xl shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
           ${slideFrom === 'left' ? 'border-r border-white/10' : 'border-l border-white/10'}
@@ -207,15 +210,7 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
 
               {/* Información General */}
               <div className="w-full flex flex-col mt-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white font-bold text-lg">Información</h3>
-                  <button 
-                    onClick={() => onEdit(user)}
-                    className="flex items-center gap-1.5 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-1.5 px-3 text-xs sm:text-sm rounded-lg transition-colors shadow-sm active:scale-95"
-                  >
-                    <Edit size={14} strokeWidth={2.5} /> Modificar
-                  </button>
-                </div>
+                <h3 className="text-white font-bold text-lg">Información</h3>
                 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
@@ -228,6 +223,22 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
                       {user.email}
                     </a>
                   </div>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="flex items-center gap-3 mt-2">
+                  <button 
+                    onClick={() => onEdit(user)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-[#FFC107] hover:bg-[#ffca28] text-black font-bold py-2.5 px-3 text-xs sm:text-sm rounded-xl transition-colors shadow-sm active:scale-95"
+                  >
+                    <Edit size={16} strokeWidth={2.5} /> Modificar
+                  </button>
+                  <button 
+                    onClick={() => setIsPasswordModalOpen(true)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 text-xs sm:text-sm rounded-xl transition-colors border border-white/10 shadow-sm active:scale-95"
+                  >
+                    <Key size={16} strokeWidth={2.5} /> Contraseña
+                  </button>
                 </div>
               </div>
 
@@ -246,7 +257,7 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
           )}
         </div>
       </div>
-
+      </div>
       <ConfirmModal 
         isOpen={isLogoutConfirmOpen}
         title="Cerrar Sesión"
@@ -259,6 +270,12 @@ export default function UserDetailsPanel({ userId, isOpen, onClose, onEdit, slid
         }}
         onCancel={() => setIsLogoutConfirmOpen(false)}
       />
-    </div>
+
+      <ChangePasswordModal 
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        userId={user?.id}
+      />
+    </>
   );
 }
