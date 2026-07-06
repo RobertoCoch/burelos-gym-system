@@ -24,6 +24,21 @@ export default function UserFormModal({ isOpen, onClose, userToEdit }: UserFormM
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('client');
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (imageFile) {
+      const objectUrl = URL.createObjectURL(imageFile);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (userToEdit?.avatar) {
+      setPreviewUrl(pb.files.getURL(userToEdit, userToEdit.avatar, { thumb: '200x200' }));
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [imageFile, userToEdit]);
+
+  const isClientRole = pb.authStore.model?.role === 'client' || pb.authStore.model?.role === 'cliente';
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -243,45 +258,60 @@ export default function UserFormModal({ isOpen, onClose, userToEdit }: UserFormM
             />
           </div>
 
-          {/* Contraseña */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">
-              Contraseña {userToEdit ? '(Opcional)' : '*'}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#1A1F2E] border border-white/5 rounded-2xl px-5 py-4 text-[15px] md:text-base font-bold text-white focus:outline-none focus:border-[#FFC107]/50 transition-colors shadow-inner"
-              placeholder={userToEdit ? "Dejar en blanco para no cambiar" : "Mínimo 8 caracteres"}
-            />
-          </div>
-
-          {/* Rol */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Rol *</label>
-            <div className="relative">
-              <select 
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-[#1A1F2E] border border-white/5 rounded-2xl px-5 py-4 text-[15px] md:text-base font-bold text-white focus:outline-none focus:border-[#FFC107]/50 transition-all shadow-inner appearance-none cursor-pointer"
-              >
-                <option value="client">Cliente</option>
-                <option value="admin">Administrador</option>
-              </select>
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-white/60 pl-2">
-                <ChevronDown size={20} strokeWidth={2.5} />
+          {/* Contraseña y Rol (Solo para Administradores) */}
+          {!isClientRole && (
+            <>
+              {/* Contraseña */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">
+                  Contraseña {userToEdit ? '(Opcional)' : '*'}
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-[#1A1F2E] border border-white/5 rounded-2xl px-5 py-4 text-[15px] md:text-base font-bold text-white focus:outline-none focus:border-[#FFC107]/50 transition-colors shadow-inner"
+                  placeholder={userToEdit ? "Dejar en blanco para no cambiar" : "Mínimo 8 caracteres"}
+                />
               </div>
-            </div>
-          </div>
+
+              {/* Rol */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Rol *</label>
+                <div className="relative">
+                  <select 
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full bg-[#1A1F2E] border border-white/5 rounded-2xl px-5 py-4 text-[15px] md:text-base font-bold text-white focus:outline-none focus:border-[#FFC107]/50 transition-all shadow-inner appearance-none cursor-pointer"
+                  >
+                    <option value="client">Cliente</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-white/60 pl-2">
+                    <ChevronDown size={20} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Imagen */}
           <div className="flex flex-col gap-2">
             <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Imagen (opcional)</label>
             <div className="bg-[#1A1F2E] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-inner">
-              <ImageIcon size={32} className="text-white/40" />
-              <p className="font-bold text-white/90 text-sm md:text-base text-center">
-                {imageFile ? imageFile.name : 'No hay imagen seleccionada'}
+              
+              {previewUrl ? (
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover shadow-[0_0_15px_rgba(255,255,255,0.1)] border border-white/20"
+                />
+              ) : (
+                <ImageIcon size={32} className="text-white/40" />
+              )}
+              
+              <p className="font-bold text-white/90 text-sm md:text-base text-center mt-2">
+                {imageFile ? imageFile.name : (userToEdit?.avatar ? 'Cambiar imagen actual' : 'No hay imagen seleccionada')}
               </p>
               <p className="text-xs text-white/40 text-center mb-2">Soporta archivos JPG, PNG, y WEBP</p>
               
@@ -294,9 +324,9 @@ export default function UserFormModal({ isOpen, onClose, userToEdit }: UserFormM
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-6 rounded-xl transition-colors text-sm border border-white/10"
+                className="bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-6 rounded-xl transition-colors text-sm border border-white/10 mt-1"
               >
-                Explorar archivos
+                {previewUrl ? 'Cambiar imagen' : 'Explorar archivos'}
               </button>
             </div>
           </div>
