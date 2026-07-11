@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  pocketbase:
+    build:
+      context: ./pb
+    container_name: gym-pocketbase
+    ports:
+      - "8090:8090"
+    volumes:
+      # Map local pb_data directory to container's pb_data to persist data
+      - ./pb_data:/pb/pb_data
+      - ./pb_migrations:/pb/pb_migrations
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+    container_name: gym-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Make sure the frontend connects to the exposed pocketbase URL
+      - VITE_POCKETBASE_URL=http://localhost:8090
+    volumes:
+      # Sync local files into container for Hot Module Reloading
+      - .:/app
+      # Except node_modules which should stay container-isolated
+      - /app/node_modules
+    depends_on:
+      - pocketbase
+    restart: unless-stopped
