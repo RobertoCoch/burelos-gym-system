@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import pb from '../../../lib/pocketbase';
 import ConfirmModal from '../../../components/shared/ConfirmModal';
+import PinModal from '../modals/PinModal';
 import { useToast } from '../../../context/ToastContext';
 
 export default function AttendancesSection() {
@@ -9,6 +10,7 @@ export default function AttendancesSection() {
   const [attendedDays, setAttendedDays] = useState<number[]>([]);
   const [hasAttendedToday, setHasAttendedToday] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const toast = useToast();
@@ -99,7 +101,7 @@ export default function AttendancesSection() {
       toast.error('Ya registraste tu asistencia el día de hoy');
       return;
     }
-    setIsConfirmOpen(true);
+    setIsPinModalOpen(true);
   };
 
   const executeRegistration = async () => {
@@ -113,7 +115,7 @@ export default function AttendancesSection() {
         fecha_asistencia: new Date().toISOString()
       });
       toast.success('Asistencia registrada con éxito');
-      setIsConfirmOpen(false);
+      setIsPinModalOpen(false);
       // If we are looking at current month, refetch to show dot immediately
       const today = new Date();
       if (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth()) {
@@ -194,13 +196,10 @@ export default function AttendancesSection() {
 
       </div>
 
-      <ConfirmModal 
-        isOpen={isConfirmOpen}
-        title="Registrar Asistencia"
-        message="¿Estás en el gimnasio y deseas registrar tu asistencia de hoy?"
-        confirmText={isSubmitting ? "Registrando..." : "Sí, registrar"}
-        onConfirm={executeRegistration}
-        onCancel={() => !isSubmitting && setIsConfirmOpen(false)}
+      <PinModal
+        isOpen={isPinModalOpen}
+        onClose={() => !isSubmitting && setIsPinModalOpen(false)}
+        onSuccess={executeRegistration}
       />
     </div>
   );

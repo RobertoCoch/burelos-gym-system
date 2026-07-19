@@ -1,11 +1,12 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import BottomNav, { type NavItem } from '../components/navigation/BottomNav';
-import { Home, CreditCard, Package, Users, LogOut } from 'lucide-react';
+import { Home, CreditCard, Package, Users, LogOut, Monitor } from 'lucide-react';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import pb from '../lib/pocketbase';
 import UserDetailsPanel from '../features/admin-views/users/UserDetailsPanel';
 import UserFormModal from '../features/admin-views/users/UserFormModal';
+import KioskModal from '../features/admin-views/kiosk/KioskModal';
 
 const adminNavItems: NavItem[] = [
   {
@@ -36,6 +37,7 @@ export default function AdminLayout() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isKioskOpen, setIsKioskOpen] = useState(false);
 
   const currentUser = pb.authStore.model;
 
@@ -108,11 +110,21 @@ export default function AdminLayout() {
             {currentUser?.name || currentUser?.email || 'Usuario'}
           </span>
         </button>
-        <div
-          className="flex items-center font-bold text-xs sm:text-sm text-gray-400 bg-white/5 border border-white/10 rounded-xl select-none shrink-0 ml-2"
-          style={{ padding: '6px 12px' }}
-        >
-          <span>Beta 1.0</span>
+        <div className="flex items-center gap-3 ml-2">
+          <button
+            onClick={() => setIsKioskOpen(true)}
+            className="flex items-center gap-2 bg-[#FFC107]/10 hover:bg-[#FFC107]/20 border border-[#FFC107]/20 text-[#FFC107] px-3 py-1.5 rounded-xl font-bold text-sm transition-all active:scale-95 shrink-0"
+          >
+            <Monitor size={18} />
+            <span className="hidden sm:inline">Kiosko</span>
+          </button>
+          
+          <div
+            className="flex items-center font-bold text-xs sm:text-sm text-gray-400 bg-white/5 border border-white/10 rounded-xl select-none shrink-0"
+            style={{ padding: '6px 12px' }}
+          >
+            <span>Beta 1.0</span>
+          </div>
         </div>
       </header>
 
@@ -137,6 +149,11 @@ export default function AdminLayout() {
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         userToEdit={currentUser}
+      />
+
+      <KioskModal
+        isOpen={isKioskOpen}
+        onClose={() => setIsKioskOpen(false)}
       />
     </div>
   );
