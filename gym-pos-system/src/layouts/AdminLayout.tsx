@@ -3,6 +3,7 @@ import BottomNav, { type NavItem } from '../components/navigation/BottomNav';
 import { Home, CreditCard, Package, Users, LogOut, Monitor } from 'lucide-react';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import pb from '../lib/pocketbase';
 import UserDetailsPanel from '../features/admin-views/users/UserDetailsPanel';
 import UserFormModal from '../features/admin-views/users/UserFormModal';
@@ -34,6 +35,7 @@ const adminNavItems: NavItem[] = [
 export default function AdminLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -57,6 +59,14 @@ export default function AdminLayout() {
     return '#' + '00000'.substring(0, 6 - c.length) + c;
   };
 
+  const formatHeaderName = (name: string) => {
+    if (!name) return 'Usuario';
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length === 0) return 'Usuario';
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[1][0]}.`;
+  };
+
   const avatarUrl = currentUser?.avatar 
     ? pb.files.getURL(currentUser, currentUser.avatar, { thumb: '100x100' })
     : null;
@@ -71,6 +81,7 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     logout();
+    toast.info('Sesión cerrada correctamente');
     navigate('/', { replace: true });
   };
 
@@ -107,7 +118,7 @@ export default function AdminLayout() {
             </div>
           )}
           <span className="font-extrabold tracking-tight text-lg sm:text-xl text-white drop-shadow-sm truncate max-w-[130px] sm:max-w-[200px]">
-            {currentUser?.name || currentUser?.email || 'Usuario'}
+            {formatHeaderName(currentUser?.name || currentUser?.email || '')}
           </span>
         </button>
         <div className="flex items-center gap-3 ml-2">

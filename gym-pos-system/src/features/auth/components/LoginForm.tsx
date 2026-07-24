@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gymIcon from '../../../assets/burelos-gym-icon.png';
 import { authServices } from '../api/auth.services';
+import { Eye, EyeOff } from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
 
 export default function LoginForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const toast = useToast();
 
     // Efecto de entrada al montar el componente
     useEffect(() => {
@@ -24,8 +28,10 @@ export default function LoginForm() {
             const authData = await authServices.loginWithEmail(email, password);
             const role = authData.record.role;
             if (role === 'admin') {
+                toast.success('Sesión iniciada correctamente');
                 navigate('/admin/dashboard');
             } else if (role === 'client') {
+                toast.success('Sesión iniciada correctamente');
                 navigate('/client/perfil');
             } else {
                 setError('Rol no reconocido.');
@@ -110,15 +116,24 @@ export default function LoginForm() {
                                 <label className="block text-white/90 font-bold text-xs uppercase tracking-wider" style={{ marginBottom: '0.5rem', marginLeft: '0.25rem' }}>
                                     Contraseña
                                 </label>
-                                <input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl focus:outline-none focus:border-[#FFC107]/50 focus:ring-1 focus:ring-[#FFC107]/50 transition-all placeholder:text-gray-500 font-medium text-base shadow-inner backdrop-blur-md"
-                                    style={{ padding: '1rem 1.25rem' }}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="w-full bg-white/5 text-white border border-white/10 rounded-2xl focus:outline-none focus:border-[#FFC107]/50 focus:ring-1 focus:ring-[#FFC107]/50 transition-all placeholder:text-gray-500 font-medium text-base shadow-inner backdrop-blur-md"
+                                        style={{ padding: '1rem 3rem 1rem 1.25rem' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={20} strokeWidth={2} /> : <Eye size={20} strokeWidth={2} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <div style={{ paddingTop: '1rem' }}>

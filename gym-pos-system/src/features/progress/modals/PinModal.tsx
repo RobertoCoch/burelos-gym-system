@@ -15,7 +15,9 @@ export default function PinModal({ isOpen, onClose, onSuccess }: PinModalProps) 
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPin(['', '', '', '']);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(false);
       setTimeout(() => {
         inputRefs.current[0]?.focus();
@@ -88,7 +90,7 @@ export default function PinModal({ isOpen, onClose, onSuccess }: PinModalProps) 
           {pin.map((digit, index) => (
             <input
               key={index}
-              ref={el => inputRefs.current[index] = el}
+              ref={(el: HTMLInputElement | null) => { inputRefs.current[index] = el; }}
               type="text"
               inputMode="numeric"
               maxLength={1}

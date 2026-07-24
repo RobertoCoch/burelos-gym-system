@@ -159,8 +159,8 @@ export default function PerfilClient() {
           </div>
         )}
 
-        <div className="flex flex-col items-start">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm truncate max-w-[200px]">
+        <div className="flex flex-col items-start w-full">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm break-words leading-tight max-w-full pr-4">
             {currentUser?.name || currentUser?.email || 'Usuario'}
           </h1>
           <button 
