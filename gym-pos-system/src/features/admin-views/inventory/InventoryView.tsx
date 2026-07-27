@@ -4,11 +4,12 @@ import { GiGymBag } from 'react-icons/gi';
 import { FaCartShopping } from 'react-icons/fa6';
 import PlansSubView from './PlansSubView';
 import ProductsSubView from './ProductsSubView';
+import EquipmentSubView from './equipment/EquipmentSubView';
 
 
 
 export default function InventoryView() {
-  const [currentSubView, setCurrentSubView] = useState<'none' | 'planes' | 'productos'>('none');
+  const [currentSubView, setCurrentSubView] = useState<'none' | 'planes' | 'productos' | 'equipo'>('none');
 
   if (currentSubView === 'planes') {
     return <PlansSubView onBack={() => setCurrentSubView('none')} />;
@@ -16,6 +17,10 @@ export default function InventoryView() {
 
   if (currentSubView === 'productos') {
     return <ProductsSubView onBack={() => setCurrentSubView('none')} />;
+  }
+
+  if (currentSubView === 'equipo') {
+    return <EquipmentSubView onBack={() => setCurrentSubView('none')} />;
   }
 
   return (
@@ -47,11 +52,10 @@ export default function InventoryView() {
           </button>
 
           <button
-            disabled
-            className="relative flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] aspect-square lg:aspect-auto lg:h-32 lg:flex-1 opacity-50 cursor-not-allowed">
-            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/50 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
-            <p className="text-base sm:text-lg font-bold text-white mb-4 lg:mb-2">Equipo</p>
-            <GiGymBag size={48} className="text-white drop-shadow-md lg:w-10 lg:h-10" />
+            onClick={() => setCurrentSubView('equipo')}
+            className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 group aspect-square lg:aspect-auto lg:h-32 lg:flex-1">
+            <p className="text-base sm:text-lg font-bold text-white group-hover:text-[#FFC107] transition-colors mb-4 lg:mb-2">Equipo</p>
+            <GiGymBag size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md lg:w-10 lg:h-10" />
           </button>
 
           <button
