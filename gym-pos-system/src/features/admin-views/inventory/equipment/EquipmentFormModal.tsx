@@ -22,6 +22,7 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
 
   // Form State
   const [name, setName] = useState('');
+  const [descripcion, setDescripcion] = useState('');
   const [cantidadTotal, setCantidadTotal] = useState<number>(1);
   const [cantidadMantenimiento, setCantidadMantenimiento] = useState<number>(0);
   const [tipo, setTipo] = useState<EquipmentType>('Peso Libre');
@@ -41,12 +42,14 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
   const resetForm = () => {
     if (equipmentToEdit) {
       setName(equipmentToEdit.nombre || '');
+      setDescripcion(equipmentToEdit.descripcion || '');
       setCantidadTotal(equipmentToEdit.cantidad_total ?? 1);
       setCantidadMantenimiento(equipmentToEdit.cantidad_mantenimiento ?? 0);
       setTipo(equipmentToEdit.tipo || 'Peso Libre');
       setMusculo(equipmentToEdit.musculo_objetivo || 'Full Body');
     } else {
       setName('');
+      setDescripcion('');
       setCantidadTotal(1);
       setCantidadMantenimiento(0);
       setTipo('Peso Libre');
@@ -83,14 +86,13 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
     if (equipmentToEdit) {
       return (
         name !== equipmentToEdit.nombre ||
-        cantidadTotal !== equipmentToEdit.cantidad_total ||
-        cantidadMantenimiento !== equipmentToEdit.cantidad_mantenimiento ||
+        descripcion !== (equipmentToEdit.descripcion || '') ||
         tipo !== equipmentToEdit.tipo ||
         musculo !== equipmentToEdit.musculo_objetivo ||
         imageFile !== null
       );
     }
-    return name !== '' || cantidadTotal !== 1 || cantidadMantenimiento !== 0 || imageFile !== null;
+    return name !== '' || descripcion !== '' || cantidadTotal !== 1 || cantidadMantenimiento !== 0 || imageFile !== null;
   };
 
   const handleCloseRequest = () => {
@@ -141,13 +143,23 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
     });
   };
 
+  const getPrefix = (t: EquipmentType) => {
+    switch(t) {
+      case 'Peso Libre': return 'PL';
+      case 'Máquina Guiada': return 'MG';
+      case 'Poleas': return 'PC';
+      case 'Cardio': return 'C';
+      case 'Funcional': return 'FC';
+      default: return 'EQ';
+    }
+  };
+
   const executeSubmit = async () => {
     setIsSubmitting(true);
     try {
       const payload = new FormData();
       payload.append('nombre', name.trim());
-      payload.append('cantidad_total', cantidadTotal.toString());
-      payload.append('cantidad_mantenimiento', cantidadMantenimiento.toString());
+      payload.append('descripcion', descripcion.trim());
       payload.append('tipo', tipo);
       payload.append('musculo_objetivo', musculo);
       
@@ -156,11 +168,50 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
       }
 
       if (equipmentToEdit) {
+        // En modo edición ya no actualizamos la cantidad total aquí (se hace desde las unidades)
         await pb.collection('equipo_gym').update(equipmentToEdit.id, payload);
         toast.success('Equipo actualizado exitosamente');
       } else {
-        await pb.collection('equipo_gym').create(payload);
-        toast.success('Equipo agregado exitosamente');
+        // Modo Creación
+        // 1. Calcular código base
+        const prefix = getPrefix(tipo);
+        const existingEq = await pb.collection('equipo_gym').getFullList({
+          filter: `tipo = "${tipo}"`
+        });
+        
+        // Encontrar el número máximo
+        let maxNumber = 0;
+        existingEq.forEach(eq => {
+          if (eq.codigo_base && eq.codigo_base.startsWith(`${prefix}-`)) {
+            const num = parseInt(eq.codigo_base.split('-')[1]);
+            if (!isNaN(num) && num > maxNumber) {
+              maxNumber = num;
+            }
+          }
+        });
+        
+        const nextNumber = maxNumber + 1;
+        const codigoBase = `${prefix}-${nextNumber.toString().padStart(2, '0')}`;
+        
+        payload.append('codigo_base', codigoBase);
+        payload.append('cantidad_total', cantidadTotal.toString());
+        payload.append('cantidad_mantenimiento', cantidadMantenimiento.toString());
+
+        const newEq = await pb.collection('equipo_gym').create(payload);
+        
+        // 2. Crear las unidades
+        for (let i = 1; i <= cantidadTotal; i++) {
+          const ref = `${codigoBase}-${i.toString().padStart(2, '0')}`;
+          const estado = i <= (cantidadTotal - cantidadMantenimiento) ? 'Operativo' : 'Mantenimiento';
+          
+          await pb.collection('equipo_unidades').create({
+            equipo_id: newEq.id,
+            codigo_referencia: ref,
+            estado: estado
+          });
+        }
+
+        toast.success('Equipo y unidades agregados exitosamente');
       }
       
       onSuccess();
@@ -228,6 +279,17 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
             />
           </div>
 
+          {/* Descripción */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Descripción</label>
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              className="w-full bg-[#1A1F2E] border border-white/5 rounded-2xl px-5 py-4 text-[15px] md:text-base font-medium text-white focus:outline-none focus:border-[#FFC107]/50 transition-colors shadow-inner resize-none min-h-[100px]"
+              placeholder="Ej. Ideal para realizar sentadillas libres, peso muerto y preses. Uso recomendado para atletas intermedios/avanzados."
+            />
+          </div>
+
           {/* Tipo y Músculo Objetivo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
@@ -262,82 +324,77 @@ export default function EquipmentFormModal({ isOpen, onClose, equipmentToEdit, o
             </div>
           </div>
 
-          {/* Cantidades (Total y Mantenimiento) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Total */}
+          {/* Cantidades (Solo visibles en creación) */}
+          {!equipmentToEdit && (
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Cantidad Total *</label>
-              <div className="flex items-center w-full bg-[#1A1F2E] border border-white/5 rounded-2xl p-2 shadow-inner">
+              <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Cantidad de Unidades a Registrar *</label>
+              <div className="flex items-center w-full bg-[#1A1F2E] border border-white/5 rounded-2xl p-2 shadow-inner max-w-sm">
                 <button 
                   onClick={() => setCantidadTotal(p => p > 1 ? p - 1 : 1)}
-                  className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
+                  className="bg-white/10 hover:bg-white/20 text-white w-12 h-12 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
                 >
                   <Minus size={20} strokeWidth={3} />
                 </button>
                 <input
                   type="number"
                   value={cantidadTotal}
-                  onChange={(e) => setCantidadTotal(parseInt(e.target.value) || 1)}
-                  className="flex-1 bg-transparent text-center text-lg font-bold text-white focus:outline-none min-w-0"
+                  onChange={(e) => setCantidadTotal(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="flex-1 bg-transparent text-center text-2xl font-bold text-white focus:outline-none min-w-0"
                 />
                 <button 
                   onClick={() => setCantidadTotal(p => p + 1)}
-                  className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
+                  className="bg-white/10 hover:bg-white/20 text-white w-12 h-12 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
                 >
                   <Plus size={20} strokeWidth={3} />
                 </button>
               </div>
+              <p className="text-xs text-gray-400 px-1 mt-1">
+                * Todas las unidades comenzarán con estado "Operativo". Podrás cambiarlas a mantenimiento desde la lista de unidades.
+              </p>
             </div>
-
-            {/* Mantenimiento */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] md:text-sm font-bold text-white/90 px-1 text-red-300">Equipos en Mantenimiento</label>
-              <div className="flex items-center w-full bg-[#1A1F2E] border border-red-500/20 rounded-2xl p-2 shadow-inner">
-                <button 
-                  onClick={() => setCantidadMantenimiento(p => p > 0 ? p - 1 : 0)}
-                  className="bg-red-500/20 hover:bg-red-500/40 text-red-400 w-10 h-10 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
-                >
-                  <Minus size={20} strokeWidth={3} />
-                </button>
-                <input
-                  type="number"
-                  value={cantidadMantenimiento}
-                  onChange={(e) => setCantidadMantenimiento(parseInt(e.target.value) || 0)}
-                  className="flex-1 bg-transparent text-center text-lg font-bold text-red-400 focus:outline-none min-w-0"
-                />
-                <button 
-                  onClick={() => setCantidadMantenimiento(p => p < cantidadTotal ? p + 1 : p)}
-                  className="bg-red-500/20 hover:bg-red-500/40 text-red-400 w-10 h-10 rounded-xl flex items-center justify-center transition-transform active:scale-95 shadow-md"
-                >
-                  <Plus size={20} strokeWidth={3} />
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Imagen */}
           <div className="flex flex-col gap-2">
             <label className="text-[13px] md:text-sm font-bold text-white/90 px-1">Fotografía del Equipo</label>
-            <div className="bg-[#1A1F2E] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-inner">
-              <ImageIcon size={40} className="text-white/40 mb-1" />
-              <p className="font-bold text-white/90 text-sm md:text-base text-center">
-                {imageFile ? imageFile.name : (equipmentToEdit?.imagen ? 'Imagen actual guardada' : 'No hay imagen seleccionada')}
-              </p>
-              <p className="text-xs text-white/40 text-center mb-2">Soporta archivos JPG, PNG, y WEBP</p>
+            <div className="bg-[#1A1F2E] border border-white/5 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-inner">
               
-              <input 
-                type="file" 
-                accept=".jpg,.jpeg,.png,.webp"
-                className="hidden" 
-                ref={fileInputRef}
-                onChange={handleImageChange}
-              />
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-white/5 hover:bg-white/10 text-white font-semibold py-2.5 px-6 rounded-xl transition-colors text-sm border border-white/10"
-              >
-                {equipmentToEdit?.imagen && !imageFile ? 'Cambiar imagen' : 'Explorar archivos'}
-              </button>
+              {/* Preview */}
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-black/30 rounded-xl overflow-hidden flex items-center justify-center shadow-lg border border-white/10 p-2 shrink-0">
+                {(imageFile || equipmentToEdit?.imagen) ? (
+                  <img 
+                    src={imageFile ? URL.createObjectURL(imageFile) : pb.files.getURL(equipmentToEdit as any, equipmentToEdit!.imagen)}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <ImageIcon size={48} className="text-white/20" />
+                )}
+              </div>
+              
+              <div className="flex flex-col items-center sm:items-start flex-1 w-full gap-2">
+                <div className="text-center sm:text-left">
+                  <p className="font-bold text-white/90 text-sm md:text-base">
+                    {imageFile ? imageFile.name : (equipmentToEdit?.imagen ? 'Imagen actual guardada' : 'No hay imagen seleccionada')}
+                  </p>
+                  <p className="text-xs text-white/40 mt-1">Soporta archivos JPG, PNG, y WEBP</p>
+                </div>
+
+                <input 
+                  type="file" 
+                  accept=".jpg,.jpeg,.png,.webp"
+                  className="hidden" 
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-6 rounded-xl transition-colors text-sm border border-white/10 w-full sm:w-auto mt-2 sm:mt-0"
+                >
+                  {equipmentToEdit?.imagen || imageFile ? 'Cambiar imagen' : 'Explorar archivos'}
+                </button>
+              </div>
             </div>
           </div>
 

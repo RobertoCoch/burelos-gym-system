@@ -16,11 +16,24 @@ export type TargetMuscle =
 export interface Equipment {
   id: string;
   nombre: string;
-  imagen: string; // URL o filename
+  descripcion?: string;
+  codigo_base?: string;
   cantidad_total: number;
   cantidad_mantenimiento: number;
   tipo: EquipmentType;
   musculo_objetivo: TargetMuscle;
-  created?: string;
-  updated?: string;
+  imagen?: string; // Nombre del archivo subido
+  created: string;
+  updated: string;
+}
+
+export type EquipmentUnitStatus = 'Operativo' | 'Mantenimiento' | 'Baja';
+
+export interface EquipmentUnit {
+  id: string;
+  equipo_id: string; // Relación con Equipment.id
+  codigo_referencia: string; // Ej. "MG-01-01"
+  estado: EquipmentUnitStatus;
+  created: string;
+  updated: string;
 }

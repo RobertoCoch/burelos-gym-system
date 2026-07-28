@@ -32,7 +32,12 @@ export default function Dashboard() {
     queryFn: async () => await pb.collection('productos').getFullList()
   });
 
-  const isLoading = isLoadingPagosM || isLoadingPagosP || isLoadingMembresias || isLoadingProductos;
+  const { data: equipo = [], isLoading: isLoadingEquipo } = useQuery({
+    queryKey: ['equipo_gym'],
+    queryFn: async () => await pb.collection('equipo_gym').getFullList()
+  });
+
+  const isLoading = isLoadingPagosM || isLoadingPagosP || isLoadingMembresias || isLoadingProductos || isLoadingEquipo;
 
   // --- Ingresos del Mes Actual ---
   const { currentMembresias, currentProductos, totalCurrent } = useMemo(() => {
@@ -135,6 +140,9 @@ export default function Dashboard() {
   // --- Inventario ---
   const totalProductosStock = productos.length;
   const lowStockProducts = productos.filter(p => p.stock <= LOW_STOCK_THRESHOLD).length;
+
+  const totalEquipoVariedades = equipo.length;
+  const totalEquiposEnMantenimiento = equipo.reduce((acc, eq) => acc + (eq.cantidad_mantenimiento || 0), 0);
 
 
   if (isLoading) {
@@ -288,13 +296,15 @@ export default function Dashboard() {
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] text-white grid grid-cols-2 shadow-[0_8px_30px_rgb(0,0,0,0.12)]" style={{ padding: '24px 16px' }}>
 
-          <div className="relative flex flex-col items-center text-center opacity-50 cursor-not-allowed rounded-xl" style={{ padding: '16px 8px' }}>
-            <div className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded text-[10px] font-bold text-white border border-white/20">En desarrollo</div>
-            <p className="text-sm font-semibold text-gray-400" style={{ marginBottom: '16px' }}>Equipo</p>
-            <GiGymBag size={48} className="text-white drop-shadow-md" style={{ marginBottom: '16px' }} />
-            <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>-</p>
-            <div className="flex items-center text-xs font-semibold text-gray-400">
-              Próximamente
+          <div className="flex flex-col items-center text-center group cursor-pointer hover:bg-white/5 rounded-xl transition-colors" style={{ padding: '16px 8px' }}>
+            <p className="text-sm font-semibold text-gray-400 group-hover:text-white transition-colors" style={{ marginBottom: '16px' }}>Equipo</p>
+            <GiGymBag size={48} className="text-white group-hover:text-[#FFC107] transition-colors drop-shadow-md" style={{ marginBottom: '16px' }} />
+            <p className="text-4xl font-extrabold tracking-tight text-[#FFC107] group-hover:scale-110 transition-transform drop-shadow-[0_0_10px_rgba(255,193,7,0.3)]" style={{ marginBottom: '12px' }}>
+              {totalEquipoVariedades}
+            </p>
+            <div className={`flex items-center text-xs font-bold ${totalEquiposEnMantenimiento > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+              {totalEquiposEnMantenimiento > 0 && <AlertTriangle size={14} className="text-red-400" style={{ marginRight: '6px' }} />}
+              {totalEquiposEnMantenimiento > 0 ? `${totalEquiposEnMantenimiento} en reparación` : 'Todo en buen estado'}
             </div>
           </div>
 
